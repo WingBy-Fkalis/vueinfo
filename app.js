@@ -40,33 +40,43 @@ function findVueRouter(vueRoot) {
 }
 
 function walkRouter(rootNode, callback) {
-  const stack = [{node: rootNode, path: ''}];
+  const stack = [{ node: rootNode, path: '' }];
 
   while (stack.length) {
-    const { node, path} = stack.pop();
+    const { node, path } = stack.pop();
 
     if (node && typeof node === 'object') {
       if (Array.isArray(node)) {
         for (const key in node) {
-          stack.push({node: node[key], path: mergePath(path, node[key].path)})
+          // Ensure node[key] is an object and has a path property before pushing to stack
+          if (node[key] && typeof node[key] === 'object' && 'path' in node[key]) {
+            stack.push({ node: node[key], path: mergePath(path, node[key].path) });
+          }
         }
       } else if (node.hasOwnProperty("children")) {
-        stack.push({node: node.children, path: path});
+        stack.push({ node: node.children, path: path });
       }
     }
 
-    callback(path, node);
+    // Only call callback if node is defined and has a path property
+    if (node && node.path !== undefined) {
+      callback(path, node);
+    }
   }
 }
 
 function mergePath(parent, path) {
-  if (path.indexOf(parent) === 0) {
-    return path
+  // Check if path is undefined or null before processing
+  if (typeof path === 'undefined' || path === null) {
+    return parent ? parent + '/' : '';
   }
 
-  return (parent ? parent + '/' : '') + path
-}
+  if (path.indexOf(parent) === 0) {
+    return path;
+  }
 
+  return (parent ? parent + '/' : '') + path;
+}
 function main() {
   const vueRoot = findVueRoot(document.body);
   if (!vueRoot) {
@@ -99,5 +109,4 @@ function main() {
 
   return routers
 }
-
 console.table(main())
