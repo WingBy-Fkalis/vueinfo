@@ -48,7 +48,7 @@ function walkRouter(rootNode, callback) {
     if (node && typeof node === 'object') {
       if (Array.isArray(node)) {
         for (const key in node) {
-          // Ensure node[key] is an object and has a path property before pushing to stack
+          // (修复代码1)Ensure node[key] is an object and has a path property before pushing to stack
           if (node[key] && typeof node[key] === 'object' && 'path' in node[key]) {
             stack.push({ node: node[key], path: mergePath(path, node[key].path) });
           }
@@ -66,11 +66,12 @@ function walkRouter(rootNode, callback) {
 }
 
 function mergePath(parent, path) {
-  // Check if path is undefined or null before processing
+  // (修复代码2)Check if path is undefined or null before processing
   if (typeof path === 'undefined' || path === null) {
     return parent ? parent + '/' : '';
   }
 
+  // 报错位置
   if (path.indexOf(parent) === 0) {
     return path;
   }
